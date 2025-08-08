@@ -25,7 +25,7 @@ router.get("/get", async (req, res) => {
             };
         };
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 });
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).select("-_id");
 
         const get = data.reduce((acc, item) => {
             const year = new Date(item.msReleaseDate).getFullYear();
@@ -37,6 +37,23 @@ router.get("/get", async (req, res) => {
         res.status(200).json({ data: get, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
+    };
+});
+
+router.get("/get/details/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const filter = { hashedId: id };
+
+        if (process.env.NODE_ENV === "production") filter.msGenre = { $not: { $in: [/^18\+$/i, /hard romance/i] } };
+
+        if (!id) return res.status(400).json({ message: "Movie/Series ID is required." });
+        const data = await MovieSeries.findOne(filter).select("-_id");
+        if (!data) return res.status(404).json({ message: "Movie/Series not found." });
+
+        res.status(200).json({ data, message: `Details fetched for '${data.msName}'.` });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch details", error: error.message });
     };
 });
 

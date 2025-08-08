@@ -1,6 +1,12 @@
 const mongoose = require("mongoose");
+const { encodeId } = require("../utils/idHash");
 
 const movieSchema = new mongoose.Schema({
+    hashedId: {
+        type: String,
+        unique: true,
+        index: true
+    },
     msName: {
         type: String,
         required: true,
@@ -63,5 +69,10 @@ const movieSchema = new mongoose.Schema({
 });
 
 movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
+
+movieSchema.pre("save", function (next) {
+    if (this.isNew) this.hashedId = encodeId(this._id.toString());
+    next();
+});
 
 module.exports = mongoose.model("MovieSeries", movieSchema);
