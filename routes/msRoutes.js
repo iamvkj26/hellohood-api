@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const Contact = require("../models/contactModel.js");
 const MovieSeries = require("../models/msModel.js");
 
@@ -8,7 +7,7 @@ const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 router.get("/get", async (req, res) => {
     try {
-        const { search, format, industry, genre, watched } = req.query;
+        const { search, format, industry, genre, watched, skip = 0, limit = 20 } = req.query;
         const filter = {};
 
         if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
@@ -25,7 +24,10 @@ router.get("/get", async (req, res) => {
             };
         };
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).select("-_id");
+        const skipNum = parseInt(skip);
+        const limitNum = parseInt(limit);
+
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -msWatched -msWatchedAt -msUploadedBy ").lean();
 
         const get = data.reduce((acc, item) => {
             const year = new Date(item.msReleaseDate).getFullYear();
@@ -34,7 +36,11 @@ router.get("/get", async (req, res) => {
             return acc;
         }, {});
 
-        res.status(200).json({ data: get, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
+        const totalDocs = await MovieSeries.countDocuments(filter);
+
+        res.status(200).json({
+            data: get, hasMore: skipNum + limitNum < totalDocs, totalData: totalDocs, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.`
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     };
@@ -43,11 +49,11 @@ router.get("/get", async (req, res) => {
 router.get("/get/details/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const filter = { hashedId: id };
+        if (!id) return res.status(400).json({ message: "Movie/Series ID is required." });
 
+        const filter = { hashedId: id };
         if (process.env.NODE_ENV === "production") filter.msGenre = { $not: { $in: [/^18\+$/i, /hard romance/i] } };
 
-        if (!id) return res.status(400).json({ message: "Movie/Series ID is required." });
         const data = await MovieSeries.findOne(filter).select("-_id");
         if (!data) return res.status(404).json({ message: "Movie/Series not found." });
 
@@ -132,7 +138,7 @@ router.get("/about", (req, res) => {
             "contact": {
                 "Email": "Not Available",
                 "Github": "https://github.com/iamvkj26",
-                "Version": "1.0.4"
+                "Version": "1.0.5"
             }
         }
         res.status(200).json({ data: jsonData, message: "" });

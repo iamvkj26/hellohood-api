@@ -12,7 +12,8 @@ app.use(cors());
 
 mongoose.connect(mongoString, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    maxPoolSize: 20
 }).then(() =>
     console.log("Connected to MongoDB...")
 ).catch(err =>

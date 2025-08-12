@@ -10,7 +10,8 @@ const movieSchema = new mongoose.Schema({
     msName: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        index: true
     },
     msAbout: {
         type: String,
@@ -29,17 +30,20 @@ const movieSchema = new mongoose.Schema({
     },
     msGenre: {
         type: [String],
-        required: true
+        required: true,
+        index: true
     },
     msFormat: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        index: true
     },
     msIndustry: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        index: true
     },
     msSeason: {
         type: String,
@@ -47,7 +51,8 @@ const movieSchema = new mongoose.Schema({
     },
     msReleaseDate: {
         type: String,
-        required: true
+        required: true,
+        index: true
     },
     msRating: {
         type: Number,
@@ -60,7 +65,8 @@ const movieSchema = new mongoose.Schema({
     },
     msWatched: {
         type: Boolean,
-        default: false
+        default: false,
+        index: true
     },
     msWatchedAt: {
         type: Date,
@@ -68,7 +74,7 @@ const movieSchema = new mongoose.Schema({
     }
 });
 
-movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
+movieSchema.index({ msName: 1, msReleaseDate: -1 }, { unique: true });
 
 movieSchema.pre("save", function (next) {
     if (this.isNew) this.hashedId = encodeId(this._id.toString());
