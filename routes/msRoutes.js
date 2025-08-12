@@ -27,7 +27,7 @@ router.get("/get", async (req, res) => {
         const skipNum = parseInt(skip);
         const limitNum = parseInt(limit);
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -msWatched -msWatchedAt -msUploadedBy ").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -msWatchedAt -msUploadedBy ").lean();
 
         const get = data.reduce((acc, item) => {
             const year = new Date(item.msReleaseDate).getFullYear();
