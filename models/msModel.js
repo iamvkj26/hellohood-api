@@ -71,6 +71,21 @@ const movieSchema = new mongoose.Schema({
     msWatchedAt: {
         type: Date,
         default: null
+    },
+    msCollection: {
+        type: {
+            name: {
+                type: String,
+                required: true
+            },
+            icon: {
+                type: String,
+                required: true
+            },
+        },
+        trim: true,
+        index: true,
+        default: null
     }
 });
 

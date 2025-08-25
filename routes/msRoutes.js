@@ -7,13 +7,14 @@ const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 router.get("/get", async (req, res) => {
     try {
-        const { search, format, industry, genre, watched, skip = 0, limit = 20 } = req.query;
+        const { search, format, industry, genre, collection, watched, skip = 0, limit = 20 } = req.query;
         const filter = {};
 
         if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
         if (format) filter.msFormat = { $regex: new RegExp(`^${escapeRegex(format)}$`, "i") };
         if (industry) filter.msIndustry = { $regex: new RegExp(`^${escapeRegex(industry)}$`, "i") };
         if (genre) filter.msGenre = { $in: [new RegExp(`^${escapeRegex(genre)}$`, "i")] };
+        if (collection) filter["msCollection.name"] = { $regex: new RegExp(`^${escapeRegex(collection)}$`, "i") };
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
 
@@ -60,6 +61,29 @@ router.get("/get/details/:id", async (req, res) => {
         res.status(200).json({ data, message: `Details fetched for '${data.msName}'.` });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch details", error: error.message });
+    };
+});
+
+router.get("/collections", async (req, res) => {
+    try {
+        const collections = await MovieSeries.aggregate([
+            { $match: { msCollection: { $ne: null } } },
+            { $group: { _id: "$msCollection.name", icon: { $first: "$msCollection.icon" } } },
+            { $project: { name: "$_id", icon: 1, _id: 0 } }
+        ]);
+
+        res.status(200).json({ data: collections });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch collections", error: error.message });
+    }
+});
+
+router.get("/collections", async (req, res) => {
+    try {
+        const collections = await MovieSeries.distinct("msCollection", { msCollection: { $ne: null } });
+        res.status(200).json({ data: collections });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to fetch collections", error: error.message });
     };
 });
 
