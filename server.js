@@ -11,8 +11,6 @@ app.use(express.json());
 app.use(cors());
 
 mongoose.connect(mongoString, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
     maxPoolSize: 20
 }).then(() =>
     console.log("Connected to MongoDB...")

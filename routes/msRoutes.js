@@ -28,20 +28,32 @@ router.get("/get", async (req, res) => {
         const skipNum = parseInt(skip);
         const limitNum = parseInt(limit);
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -msWatchedAt -msUploadedBy ").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -msUploadedBy -msWatchedAt -__v").lean();
 
-        const get = data.reduce((acc, item) => {
-            const year = new Date(item.msReleaseDate).getFullYear();
-            if (!acc[year]) acc[year] = [];
-            acc[year].push(item);
-            return acc;
-        }, {});
+        const now = new Date();
+        const upcoming = [];
+        const groupedByYear = {};
+
+        data.forEach(item => {
+            const releaseDate = new Date(item.msReleaseDate);
+            if (releaseDate > now) upcoming.push(item);
+            else {
+                const year = releaseDate.getFullYear();
+                if (!groupedByYear[year]) groupedByYear[year] = [];
+                groupedByYear[year].push(item);
+            };
+        });
+
+        const sections = [];
+        if (upcoming.length > 0) sections.push({ label: "upcoming", movies: upcoming });
+
+        Object.keys(groupedByYear).sort((a, b) => b - a).forEach(year => {
+            sections.push({ label: year, movies: groupedByYear[year] });
+        });
 
         const totalDocs = await MovieSeries.countDocuments(filter);
 
-        res.status(200).json({
-            data: get, hasMore: skipNum + limitNum < totalDocs, totalData: totalDocs, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.`
-        });
+        res.status(200).json({ data: sections, hasMore: skipNum + limitNum < totalDocs, totalDocs, totalYears: Object.keys(groupedByYear).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     };
@@ -55,7 +67,7 @@ router.get("/get/details/:id", async (req, res) => {
         const filter = { hashedId: id };
         if (process.env.NODE_ENV === "production") filter.msGenre = { $not: { $in: [/^18\+$/i, /hard romance/i] } };
 
-        const data = await MovieSeries.findOne(filter).select("-_id");
+        const data = await MovieSeries.findOne(filter).select("-_id -__v -hashedId -msCollection");
         if (!data) return res.status(404).json({ message: "Movie/Series not found." });
 
         res.status(200).json({ data, message: `Details fetched for '${data.msName}'.` });
@@ -76,15 +88,6 @@ router.get("/collections", async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch collections", error: error.message });
     }
-});
-
-router.get("/collections", async (req, res) => {
-    try {
-        const collections = await MovieSeries.distinct("msCollection", { msCollection: { $ne: null } });
-        res.status(200).json({ data: collections });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch collections", error: error.message });
-    };
 });
 
 router.get("/about", (req, res) => {
