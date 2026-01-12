@@ -53,7 +53,35 @@ router.get("/get", async (req, res) => {
 
         const totalDocs = await MovieSeries.countDocuments(filter);
 
-        res.status(200).json({ data: sections, hasMore: skipNum + limitNum < totalDocs, totalDocs, totalYears: Object.keys(groupedByYear).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
+        const countsAgg = await MovieSeries.aggregate([{ $match: filter }, {
+            $facet: {
+                industry: [{
+                    $group: {
+                        _id: { $cond: [{ $in: ["$msIndustry", ["Hollywood", "Bollywood"]] }, "$msIndustry", "Others"] },
+                        count: { $sum: 1 }
+                    }
+                }],
+                format: [{ $group: { _id: "$msFormat", count: { $sum: 1 } } }],
+                watched: [{ $group: { _id: "$msWatched", count: { $sum: 1 } } }]
+            }
+        }]);
+
+        const industryCounts = countsAgg[0].industry.reduce((acc, cur) => {
+            acc[cur._id.toLowerCase()] = cur.count;
+            return acc;
+        }, {});
+
+        const formatCounts = countsAgg[0].format.reduce((acc, cur) => {
+            acc[cur._id.toLowerCase()] = cur.count;
+            return acc;
+        }, {});
+
+        const watchedCounts = countsAgg[0].watched.reduce((acc, cur) => {
+            acc[cur._id ? "watched" : "unwatched"] = cur.count;
+            return acc;
+        }, {});
+
+        res.status(200).json({ data: sections, hasMore: skipNum + limitNum < totalDocs, totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, others: industryCounts.others || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 } }, totalYears: Object.keys(groupedByYear).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     };
