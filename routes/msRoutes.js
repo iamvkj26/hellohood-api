@@ -81,7 +81,7 @@ router.get("/get", async (req, res) => {
             return acc;
         }, {});
 
-        res.status(200).json({ data: sections, hasMore: skipNum + limitNum < totalDocs, totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, others: industryCounts.others || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 } }, totalYears: Object.keys(groupedByYear).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
+        res.status(200).json({ data: sections, hasMore: skipNum + limitNum < totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, others: industryCounts.others || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 } }, totalYears: Object.keys(groupedByYear).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     };
