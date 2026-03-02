@@ -21,7 +21,7 @@ router.get("/get", async (req, res) => {
         const skipNum = parseInt(skip);
         const limitNum = parseInt(limit);
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -msUploadedBy -msWatchedAt -__v").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry").lean();
 
         const now = new Date();
         const upcoming = [];
