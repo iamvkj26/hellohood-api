@@ -18,6 +18,8 @@ mongoose.connect(mongoString, {
     console.error("MongoDB connection error:", err)
 );
 
+app.use("/about", require("./routes/aboutRoutes"));
+app.use("/contact", require("./routes/contactRoutes"));
 app.use("/movieseries", require("./routes/msRoutes"));
 
 app.get("/health", (req, res) => {
