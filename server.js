@@ -19,8 +19,8 @@ mongoose.connect(mongoString, {
 );
 
 app.use("/about", require("./routes/aboutRoutes"));
-app.use("/contact", require("./routes/contactRoutes"));
 app.use("/movieseries", require("./routes/msRoutes"));
+app.use("/query", require("./routes/queryRoutes"));
 
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "OK" });
