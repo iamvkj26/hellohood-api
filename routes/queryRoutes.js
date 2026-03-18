@@ -19,7 +19,7 @@ router.post("/post", async (req, res) => {
 
 router.get("/get", async (req, res) => {
     try {
-        const query = await Query.find();
+        const query = await Query.find().sort({ createdAt: -1 });
         res.status(200).json({ data: query, message: "Query's fetched successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message, message: "Failed to fetch query's" });
