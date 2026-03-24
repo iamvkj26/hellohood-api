@@ -15,9 +15,6 @@ const querySchema = new mongoose.Schema({
         type: String,
         enum: ["pending", "resolved"],
         default: "pending"
-    },
-    statusUpdatedAt: {
-        type: Date
     }
 }, {
     timestamps: true
