@@ -77,6 +77,12 @@ const movieSchema = new mongoose.Schema({
         trim: true,
         index: true,
         default: null
+    },
+    ott: {
+        type: String,
+        enum: ["netflix", "prime", "hotstar", "other"],
+        index: true,
+        default: "other"
     }
 });
 
