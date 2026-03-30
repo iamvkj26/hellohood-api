@@ -24,6 +24,6 @@ app.use("/query", require("./routes/queryRoutes"));
 
 app.get("/health", (req, res) => {
     res.status(200).json({ status: "OK" });
-})
+});
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));

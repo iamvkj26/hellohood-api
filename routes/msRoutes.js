@@ -6,7 +6,7 @@ const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 router.get("/get", async (req, res) => {
     try {
-        const { search, format, industry, genre, collection, watched, skip = 0, limit = 20 } = req.query;
+        const { search, format, industry, genre, collection, watched, ott, skip = 0, limit = 20 } = req.query;
         const filter = {};
 
         if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
@@ -16,11 +16,12 @@ router.get("/get", async (req, res) => {
         if (collection) filter["msCollection.name"] = { $regex: new RegExp(`^${escapeRegex(collection)}$`, "i") };
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
+        if (ott) filter.ott = ott;
 
         const skipNum = parseInt(skip);
         const limitNum = parseInt(limit);
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msFormat -msIndustry -__v").lean();
 
         const now = new Date();
         const upcoming = [];
