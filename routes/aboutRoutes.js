@@ -79,7 +79,7 @@ router.get("/get", (req, res) => {
                 "Version": "1.0.5"
             }
         }
-        res.status(200).json({ data: jsonData, message: "" });
+        res.status(200).json({ data: jsonData });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch about us details", error: error.message });
     };

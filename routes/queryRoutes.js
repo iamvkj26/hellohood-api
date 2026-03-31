@@ -11,7 +11,7 @@ router.post("/post", async (req, res) => {
         const query = new Query({ name, message });
         await query.save();
 
-        res.status(200).json({ data: query, message: "Thanks for your'e query!, we will update it soon." });
+        res.status(200).json({ data: query, message: "Thanks for your query!, we will update it soon." });
     } catch (error) {
         res.status(500).json({ message: "Failed to submit query", error: error.message });
     };
@@ -19,8 +19,8 @@ router.post("/post", async (req, res) => {
 
 router.get("/get", async (req, res) => {
     try {
-        const query = await Query.find().sort({ createdAt: -1 });
-        res.status(200).json({ data: query, message: "Query's fetched successfully" });
+        const query = await Query.find().sort({ createdAt: -1 }).select("-_id -__v");
+        res.status(200).json({ data: query, message: "Queries fetched successfully" });
     } catch (error) {
         res.status(500).json({ error: error.message, message: "Failed to fetch query's" });
     };
