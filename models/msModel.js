@@ -65,17 +65,10 @@ const movieSchema = new mongoose.Schema({
     },
     msCollection: {
         type: {
-            name: {
-                type: String,
-                required: true
-            },
-            icon: {
-                type: String,
-                required: true
-            },
+            name: { type: String, required: true },
+            icon: { type: String, required: true },
         },
         trim: true,
-        index: true,
         default: null
     },
     ott: {
@@ -86,6 +79,6 @@ const movieSchema = new mongoose.Schema({
     }
 });
 
-movieSchema.index({ msName: 1, msReleaseDate: -1 }, { unique: true });
+movieSchema.index({ msName: 1, msReleaseDate: -1, "msCollection.name": 1 }, { unique: true });
 
 module.exports = mongoose.model("MovieSeries", movieSchema);

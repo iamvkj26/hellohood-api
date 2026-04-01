@@ -11,7 +11,7 @@ router.post("/post", async (req, res) => {
         const query = new Query({ name, message });
         await query.save();
 
-        res.status(200).json({ data: query, message: "Thanks for your query!, we will update it soon." });
+        res.status(201).json({ data: query, message: "Thanks for your query!, we will update it soon." });
     } catch (error) {
         res.status(500).json({ message: "Failed to submit query", error: error.message });
     };

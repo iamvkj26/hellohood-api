@@ -18,10 +18,12 @@ router.get("/get", async (req, res) => {
         else if (watched === "false") filter.msWatched = false;
         if (ott) filter.ott = ott;
 
-        const skipNum = parseInt(skip);
-        const limitNum = parseInt(limit);
+        const skipNum = Math.max(0, parseInt(skip) || 0);
+        const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 20));
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -ott").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum)
+            // .select("-_id -msLink -msFormat -msIndustry -__v -ott")
+            .lean();
 
         const now = new Date();
         const upcoming = [];
