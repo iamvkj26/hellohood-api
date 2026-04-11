@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const movieSchema = new mongoose.Schema({
     hashedId: {
         type: String,
-        required: true,
         unique: true,
         index: true
     },
@@ -58,10 +57,18 @@ const movieSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    msAddedAt: {
+        type: Date,
+        default: null
+    },
     msWatched: {
         type: Boolean,
         default: false,
         index: true
+    },
+    msWatchedAt: {
+        type: Date,
+        default: null
     },
     msCollection: {
         type: {
