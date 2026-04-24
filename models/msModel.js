@@ -3,14 +3,12 @@ const mongoose = require("mongoose");
 const movieSchema = new mongoose.Schema({
     hashedId: {
         type: String,
-        unique: true,
-        index: true
+        unique: true
     },
     msName: {
         type: String,
         required: true,
-        trim: true,
-        index: true
+        trim: true
     },
     msAbout: {
         type: String,
@@ -27,44 +25,47 @@ const movieSchema = new mongoose.Schema({
         required: true,
         trim: true
     },
-    msGenre: {
-        type: [String],
-        required: true,
-        index: true
-    },
     msFormat: {
         type: String,
         required: true,
-        trim: true,
-        index: true
+        trim: true
     },
     msIndustry: {
         type: String,
         required: true,
-        trim: true,
-        index: true
+        trim: true
+    },
+    msCast: {
+        type: [String],
+        required: true,
+        default: []
+    },
+    msGenre: {
+        type: [String],
+        required: true
     },
     msSeason: {
         type: String,
         required: true
     },
-    msReleaseDate: {
-        type: String,
-        required: true,
-        index: true
-    },
     msRating: {
         type: Number,
         required: true
     },
+    msReleaseDate: {
+        type: String,
+        required: true
+    },
     msAddedAt: {
         type: Date,
-        default: null
+        default: Date.now,
+        validate: {
+            validator: (value) => value >= MIN_ADDED_DATE && value <= new Date(), message: "Movie/Series Added Date cannot be before 28 June 2025."
+        }
     },
     msWatched: {
         type: Boolean,
-        default: false,
-        index: true
+        default: false
     },
     msWatchedAt: {
         type: Date,
@@ -81,11 +82,12 @@ const movieSchema = new mongoose.Schema({
     ott: {
         type: String,
         enum: ["netflix", "prime", "hotstar", "zee5", "sonyliv", "lionsgateplay", "other", "none"],
-        index: true,
         default: "none"
     }
 });
 
-movieSchema.index({ msName: 1, msReleaseDate: -1, "msCollection.name": 1 }, { unique: true });
+movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
+
+[{ msReleaseDate: -1 }, { msReleaseDate: 1 }, { msName: 1 }, { msCast: 1 }, { msFormat: 1, msIndustry: 1 }, { msGenre: 1 }, { "msCollection.name": 1 }, { msWatched: 1 }, { ott: 1 }].forEach(index => movieSchema.index(index));
 
 module.exports = mongoose.model("MovieSeries", movieSchema);

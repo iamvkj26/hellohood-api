@@ -9,7 +9,10 @@ router.get("/get", async (req, res) => {
         const { search, format, industry, genre, collection, watched, ott, skip = 0, limit = 20 } = req.query;
         const filter = {};
 
-        if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
+        if (search) {
+            const regex = new RegExp(escapeRegex(search), "i");
+            filter.$or = [{ msName: regex }, { msCast: regex }];
+        };
         if (format) filter.msFormat = { $regex: new RegExp(`^${escapeRegex(format)}$`, "i") };
         if (industry) filter.msIndustry = { $regex: new RegExp(`^${escapeRegex(industry)}$`, "i") };
         if (genre) filter.msGenre = { $in: [new RegExp(`^${escapeRegex(genre)}$`, "i")] };
@@ -21,9 +24,7 @@ router.get("/get", async (req, res) => {
         const skipNum = Math.max(0, parseInt(skip) || 0);
         const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 20));
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum)
-            // .select("-_id -msLink -msFormat -msIndustry -__v -ott")
-            .lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msCollection -ott -msAddedAt -msWatchedAt").lean();
 
         const now = new Date();
         const upcoming = [];
@@ -110,7 +111,7 @@ router.get("/get/details/:id", async (req, res) => {
         const filter = { hashedId: id };
         if (process.env.NODE_ENV === "production") filter.msGenre = { $not: { $in: [/^18\+$/i, /hard romance/i] } };
 
-        const data = await MovieSeries.findOne(filter).select("-_id -msWatched -msCollection -hashedId -__v -ott").lean();
+        const data = await MovieSeries.findOne(filter).select("-_id -msCollection -hashedId -__v -msAddedAt -msWatchedAt").lean();
         if (!data) return res.status(404).json({ message: "Movie/Series not found." });
 
         res.status(200).json({ data, message: `Details fetched for '${data.msName}'.` });
