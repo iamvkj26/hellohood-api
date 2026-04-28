@@ -19,12 +19,12 @@ router.get("/get", async (req, res) => {
         if (collection) filter["msCollection.name"] = { $regex: new RegExp(`^${escapeRegex(collection)}$`, "i") };
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
-        if (ott) filter.ott = ott;
+        if (ott) filter.msOTT = ott;
 
         const skipNum = Math.max(0, parseInt(skip) || 0);
         const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 20));
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msCollection -ott -msAddedAt -msWatchedAt").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msCollection -msOTT -msAddedAt -msWatchedAt -msCast").lean();
 
         const now = new Date();
         const upcoming = [];
@@ -51,17 +51,12 @@ router.get("/get", async (req, res) => {
 
         const countsAgg = await MovieSeries.aggregate([{ $match: filter }, {
             $facet: {
-                industry: [{
-                    $group: {
-                        _id: { $cond: [{ $in: ["$msIndustry", ["Hollywood", "Bollywood"]] }, "$msIndustry", "Others"] },
-                        count: { $sum: 1 }
-                    }
-                }],
+                industry: [{ $group: { _id: "$msIndustry", count: { $sum: 1 } } }],
                 format: [{ $group: { _id: "$msFormat", count: { $sum: 1 } } }],
                 watched: [{ $group: { _id: "$msWatched", count: { $sum: 1 } } }],
                 genre: [{ $unwind: "$msGenre" }, { $group: { _id: "$msGenre", count: { $sum: 1 } } }],
                 collection: [{ $match: { msCollection: { $ne: null } } }, { $group: { _id: "$msCollection.name", count: { $sum: 1 } } }],
-                ott: [{ $group: { _id: "$ott", count: { $sum: 1 } } }]
+                ott: [{ $group: { _id: "$msOTT", count: { $sum: 1 } } }]
             }
         }]);
 
@@ -96,7 +91,7 @@ router.get("/get", async (req, res) => {
         }, {});
 
         res.status(200).json({
-            data: sections, hasMore: skipNum + limitNum < totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, others: industryCounts.others || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 }, genre: genreCounts, collection: collectionCounts, ott: ottCounts }, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.`
+            data: sections, hasMore: skipNum + limitNum < totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, other: industryCounts.other || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 }, genre: genreCounts, collection: collectionCounts, ott: ottCounts }, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.`
         });
     } catch (error) {
         res.status(500).json({ error: error.message });

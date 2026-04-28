@@ -28,11 +28,13 @@ const movieSchema = new mongoose.Schema({
     msFormat: {
         type: String,
         required: true,
+        lowercase: true,
         trim: true
     },
     msIndustry: {
         type: String,
         required: true,
+        lowercase: true,
         trim: true
     },
     msCast: {
@@ -42,10 +44,6 @@ const movieSchema = new mongoose.Schema({
     },
     msGenre: {
         type: [String],
-        required: true
-    },
-    msSeason: {
-        type: String,
         required: true
     },
     msRating: {
@@ -79,15 +77,30 @@ const movieSchema = new mongoose.Schema({
         trim: true,
         default: null
     },
-    ott: {
+    msOTT: {
         type: String,
         enum: ["netflix", "prime", "hotstar", "zee5", "sonyliv", "lionsgateplay", "other", "none"],
         default: "none"
+    },
+    sStatus: {
+        type: String,
+        enum: ["ongoing", "completed"],
+        required: function () {
+            return this.msFormat === "series";
+        },
+        default: null
+    },
+    sSeasons: {
+        type: Number,
+        required: function () {
+            return this.msFormat === "series";
+        },
+        default: null
     }
 });
 
 movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
 
-[{ msReleaseDate: -1 }, { msReleaseDate: 1 }, { msName: 1 }, { msCast: 1 }, { msFormat: 1, msIndustry: 1 }, { msGenre: 1 }, { "msCollection.name": 1 }, { msWatched: 1 }, { ott: 1 }].forEach(index => movieSchema.index(index));
+[{ msReleaseDate: -1 }, { msReleaseDate: 1 }, { msName: 1 }, { msCast: 1 }, { msFormat: 1, msIndustry: 1 }, { msGenre: 1 }, { "msCollection.name": 1 }, { msWatched: 1 }, { msOTT: 1 }].forEach(index => movieSchema.index(index));
 
 module.exports = mongoose.model("MovieSeries", movieSchema);
