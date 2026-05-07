@@ -104,7 +104,6 @@ router.get("/get/details/:id", async (req, res) => {
         if (!id) return res.status(400).json({ message: "Movie/Series ID is required." });
 
         const filter = { hashedId: id };
-        if (process.env.NODE_ENV === "production") filter.msGenre = { $not: { $in: [/^18\+$/i, /hard romance/i] } };
 
         const data = await MovieSeries.findOne(filter).select("-_id -msCollection -hashedId -__v -msAddedAt -msWatchedAt").lean();
         if (!data) return res.status(404).json({ message: "Movie/Series not found." });
