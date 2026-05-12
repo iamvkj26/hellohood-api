@@ -58,7 +58,7 @@ const movieSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
         validate: {
-            validator: (value) => value >= MIN_ADDED_DATE && value <= new Date(), message: "Movie/Series Added Date cannot be before 28 June 2025."
+            validator: (value) => value >= MIN_ADDED_DATE && value <= new Date(), message: "Movie/Series Added Date cannot be before 05 July 2025."
         }
     },
     msWatched: {
