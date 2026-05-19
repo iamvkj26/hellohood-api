@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const helmet = require("helmet");
-require("dotenv").config();
+require("dotenv").config({ quiet: true });
 
 const port = process.env.PORT || 3000;
 

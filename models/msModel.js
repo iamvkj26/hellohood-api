@@ -82,7 +82,7 @@ const movieSchema = new mongoose.Schema({
         enum: ["netflix", "prime", "hotstar", "zee5", "sonyliv", "lionsgateplay", "other", "none"],
         default: "none"
     },
-    sStatus: {
+    msStatus: {
         type: String,
         enum: ["ongoing", "completed"],
         required: function () {
