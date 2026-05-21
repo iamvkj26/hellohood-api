@@ -11,7 +11,7 @@ router.get("/get", async (req, res) => {
 
         if (search) {
             const regex = new RegExp(escapeRegex(search), "i");
-            filter.$or = [{ msName: regex }, { msCast: regex }];
+            filter.$or = [{ msName: regex }, { "msCast.name": regex }];
         };
         if (format) filter.msFormat = { $regex: new RegExp(`^${escapeRegex(format)}$`, "i") };
         if (industry) filter.msIndustry = { $regex: new RegExp(`^${escapeRegex(industry)}$`, "i") };
@@ -24,7 +24,7 @@ router.get("/get", async (req, res) => {
         const skipNum = Math.max(0, parseInt(skip) || 0);
         const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 20));
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msCollection -msOTT -msAddedAt -msWatchedAt -msCast").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msCollection -msOTT -msAddedAt -msWatchedAt -msCast -sSeasons -tmdbId").lean();
 
         const now = new Date();
         const upcoming = [];

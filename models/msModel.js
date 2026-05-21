@@ -5,6 +5,11 @@ const movieSchema = new mongoose.Schema({
         type: String,
         unique: true
     },
+    tmdbId: {
+        type: Number,
+        required: true,
+        trim: true
+    },
     msName: {
         type: String,
         required: true,
@@ -37,11 +42,14 @@ const movieSchema = new mongoose.Schema({
         lowercase: true,
         trim: true
     },
-    msCast: {
-        type: [String],
-        required: true,
-        default: []
-    },
+    msCast: [
+        {
+            id: Number,
+            name: String,
+            character: String,
+            profile: String,
+        },
+    ],
     msGenre: {
         type: [String],
         required: true
