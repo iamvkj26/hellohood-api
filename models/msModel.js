@@ -158,6 +158,8 @@ const movieSchema = new mongoose.Schema({
 
 movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
 
-[{ msReleaseDate: -1 }, { msReleaseDate: 1 }, { msName: 1 }, { msCast: 1 }, { msFormat: 1, msIndustry: 1 }, { msGenre: 1 }, { "msCollection.name": 1 }, { msWatched: 1 }, { msOTT: 1 }].forEach(index => movieSchema.index(index));
+[{ msReleaseDate: -1 }, { msName: 1 }, { "msCast.name": 1 }, { msFormat: 1, msIndustry: 1, msReleaseDate: -1 }, { msGenre: 1, msReleaseDate: -1 }, { "msCollection.name": 1 }, { msWatched: 1, msReleaseDate: -1 }, { msOTT: 1, msReleaseDate: -1 }].forEach(index => movieSchema.index(index));
+
+movieSchema.index({ msName: "text", "msCast.name": "text" });
 
 module.exports = mongoose.model("MovieSeries", movieSchema);

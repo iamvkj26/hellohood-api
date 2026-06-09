@@ -40,3 +40,9 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));
+
+if (process.env.KEEP_ALIVE === "true") {
+    setInterval(() => {
+        require("http").get(`http://localhost:${port}/health`, () => { });
+    }, 9 * 60 * 1000);
+};

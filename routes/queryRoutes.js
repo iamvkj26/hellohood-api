@@ -8,6 +8,9 @@ router.post("/post", async (req, res) => {
 
         if (!name || !message) return res.status(400).json({ message: "All fields are required." });
 
+        if (name.trim().length > 50) return res.status(400).json({ message: "Name too long." });
+        if (message.trim().length > 500) return res.status(400).json({ message: "Message too long." });
+
         const query = new Query({ name, message });
         await query.save();
 
