@@ -77,14 +77,6 @@ const movieSchema = new mongoose.Schema({
         type: Date,
         default: null
     },
-    msCollection: {
-        type: {
-            name: { type: String, required: true },
-            icon: { type: String, required: true },
-        },
-        trim: true,
-        default: null
-    },
     msOTT: {
         type: String,
         enum: ["netflix", "prime", "hotstar", "zee5", "sonyliv", "lionsgateplay", "other", "none"],
@@ -158,7 +150,7 @@ const movieSchema = new mongoose.Schema({
 
 movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
 
-[{ msReleaseDate: -1 }, { msName: 1 }, { "msCast.name": 1 }, { msFormat: 1, msIndustry: 1, msReleaseDate: -1 }, { msGenre: 1, msReleaseDate: -1 }, { "msCollection.name": 1 }, { msWatched: 1, msReleaseDate: -1 }, { msOTT: 1, msReleaseDate: -1 }].forEach(index => movieSchema.index(index));
+[{ msReleaseDate: -1 }, { msName: 1 }, { "msCast.name": 1 }, { msFormat: 1, msIndustry: 1, msReleaseDate: -1 }, { msGenre: 1, msReleaseDate: -1 }, { msWatched: 1, msReleaseDate: -1 }, { msOTT: 1, msReleaseDate: -1 }].forEach(index => movieSchema.index(index));
 
 movieSchema.index({ msName: "text", "msCast.name": "text" });
 

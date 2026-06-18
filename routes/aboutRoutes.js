@@ -6,7 +6,7 @@ router.get("/get", (req, res) => {
         const jsonData = {
             "name": "HelloHood",
             "tagline": "Your Personal Movie & Series Tracker",
-            "description": "HelloHood is a complete ecosystem of applications designed to help users track, explore, and manage their favorite movies and web series. It offers features like search, filters, watched tracking, seasons management, OTT platform tracking, collections, and an admin panel for easy content management. Built with a focus on speed, privacy, and scalability.",
+            "description": "HelloHood is a complete ecosystem of applications designed to help users track, explore, and manage their favorite movies and web series. It offers features like search, filters, watched tracking, seasons management, OTT platform tracking, and an admin panel for easy content management. Built with a focus on speed, privacy, and scalability.",
             "projects": {
                 "Hellohood": {
                     "type": "Frontend (User)",
@@ -15,7 +15,7 @@ router.get("/get", (req, res) => {
                         "Browse movies & series with filters like Bollywood, Hollywood, or genre",
                         "Search by movie, series title or cast name",
                         "Filter by OTT platform (Netflix, Prime, Hotstar, etc.)",
-                        "Browse by collections and genres",
+                        "Browse by genres",
                         "View season-wise details for series",
                         "Mark content as watched",
                         "Responsive design with Navbar & Footer",
@@ -30,7 +30,6 @@ router.get("/get", (req, res) => {
                         "Content retrieval with advanced filters",
                         "Full-text search on title and cast",
                         "OTT platform filtering",
-                        "Collections endpoint",
                         "Season-wise data for series",
                         "MongoDB database integration",
                         "Secure server configuration"

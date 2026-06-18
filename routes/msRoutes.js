@@ -6,7 +6,7 @@ const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 router.get("/get", async (req, res) => {
     try {
-        const { search, format, industry, genre, collection, watched, ott, skip = 0, limit = 20 } = req.query;
+        const { search, format, industry, genre, watched, ott, skip = 0, limit = 20 } = req.query;
         const filter = {};
 
         if (search) {
@@ -16,7 +16,6 @@ router.get("/get", async (req, res) => {
         if (format) filter.msFormat = { $regex: new RegExp(`^${escapeRegex(format)}$`, "i") };
         if (industry) filter.msIndustry = { $regex: new RegExp(`^${escapeRegex(industry)}$`, "i") };
         if (genre) filter.msGenre = { $in: [new RegExp(`^${escapeRegex(genre)}$`, "i")] };
-        if (collection) filter["msCollection.name"] = { $regex: new RegExp(`^${escapeRegex(collection)}$`, "i") };
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
         if (ott) filter.msOTT = ott;
@@ -24,7 +23,7 @@ router.get("/get", async (req, res) => {
         const skipNum = Math.max(0, parseInt(skip) || 0);
         const limitNum = Math.min(50, Math.max(1, parseInt(limit) || 20));
 
-        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msCollection -msOTT -msAddedAt -msWatchedAt -msCast -sSeasons -tmdbId").lean();
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 }).skip(skipNum).limit(limitNum).select("-_id -msLink -msFormat -msIndustry -__v -msOTT -msAddedAt -msWatchedAt -msCast -sSeasons -tmdbId").lean();
 
         const now = new Date();
         const upcoming = [];
@@ -55,7 +54,6 @@ router.get("/get", async (req, res) => {
                 format: [{ $group: { _id: "$msFormat", count: { $sum: 1 } } }],
                 watched: [{ $group: { _id: "$msWatched", count: { $sum: 1 } } }],
                 genre: [{ $unwind: "$msGenre" }, { $group: { _id: "$msGenre", count: { $sum: 1 } } }],
-                collection: [{ $match: { msCollection: { $ne: null } } }, { $group: { _id: "$msCollection.name", count: { $sum: 1 } } }],
                 ott: [{ $group: { _id: "$msOTT", count: { $sum: 1 } } }]
             }
         }]);
@@ -80,18 +78,13 @@ router.get("/get", async (req, res) => {
             return acc;
         }, {});
 
-        const collectionCounts = countsAgg[0].collection.reduce((acc, cur) => {
-            acc[cur._id.toLowerCase()] = cur.count;
-            return acc;
-        }, {});
-
         const ottCounts = countsAgg[0].ott.reduce((acc, cur) => {
             if (cur._id) acc[cur._id.toLowerCase()] = cur.count;
             return acc;
         }, {});
 
         res.status(200).json({
-            data: sections, hasMore: skipNum + limitNum < totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, other: industryCounts.other || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 }, genre: genreCounts, collection: collectionCounts, ott: ottCounts }, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.`
+            data: sections, hasMore: skipNum + limitNum < totalDocs, counts: { total: totalDocs, industry: { hollywood: industryCounts.hollywood || 0, bollywood: industryCounts.bollywood || 0, other: industryCounts.other || 0 }, format: { movie: formatCounts.movie || 0, series: formatCounts.series || 0 }, watched: { watched: watchedCounts.watched || 0, unwatched: watchedCounts.unwatched || 0 }, genre: genreCounts, ott: ottCounts }, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.`
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -105,25 +98,12 @@ router.get("/get/details/:id", async (req, res) => {
 
         const filter = { hashedId: id };
 
-        const data = await MovieSeries.findOne(filter).select("-_id -msCollection -hashedId -__v -msAddedAt -msWatchedAt").lean();
+        const data = await MovieSeries.findOne(filter).select("-_id -hashedId -__v -msAddedAt -msWatchedAt").lean();
         if (!data) return res.status(404).json({ message: "Movie/Series not found." });
 
         res.status(200).json({ data, message: `Details fetched for '${data.msName}'.` });
     } catch (error) {
         res.status(500).json({ message: "Failed to fetch details", error: error.message });
-    };
-});
-
-router.get("/collections", async (req, res) => {
-    try {
-        const collections = await MovieSeries.aggregate([
-            { $match: { msCollection: { $ne: null } } },
-            { $group: { _id: "$msCollection.name", icon: { $first: "$msCollection.icon" } } },
-            { $project: { name: "$_id", icon: 1, _id: 0 } }
-        ]);
-        res.status(200).json({ data: collections });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to fetch collections", error: error.message });
     };
 });
 
