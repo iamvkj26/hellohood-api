@@ -66,7 +66,7 @@ const movieSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
         validate: {
-            validator: (value) => value >= MIN_ADDED_DATE && value <= new Date(), message: "Movie/Series Added Date cannot be before 05 July 2025."
+            validator: (value) => value >= MIN_ADDED_DATE && value <= new Date(), message: "Movie/Series Added Date cannot be before 29 June 2025."
         }
     },
     msWatched: {
@@ -81,6 +81,15 @@ const movieSchema = new mongoose.Schema({
         type: String,
         enum: ["netflix", "prime", "hotstar", "zee5", "sonyliv", "lionsgateplay", "other", "none"],
         default: "none"
+    },
+    franchiseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Franchise",
+        default: null
+    },
+    franchiseOrder: {
+        type: Number,
+        default: null
     },
     msStatus: {
         type: String,
